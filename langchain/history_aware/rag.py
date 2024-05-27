@@ -1,12 +1,13 @@
 # https://medium.com/@shaktikanungo2019/conversational-ai-unveiling-the-first-rag-chatbot-with-langchain-8b9b04ee4b63
 
-import PyPDF2
+# import PyPDF2
 from dotenv import load_dotenv
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from langchain_openai import OpenAIEmbeddings
 from langchain_openai import ChatOpenAI
 import os
+import pandas as pd
 
 from langchain.chains import create_history_aware_retriever
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -25,33 +26,34 @@ embedding_model = "text-embedding-3-small"
 model_name = "gpt-3.5-turbo"
 
 
-def setupDbAndChain(pdf_docs_path):
+def setupDbAndChain(data_path):
     embeddings = OpenAIEmbeddings(model=embedding_model)
     if not os.path.exists(DB_FAISS_PATH):
-        docs = []
-        metadata = []
+        # docs = []
+        # metadata = []
 
-        # Read PDF documents from the given path
-        pdf_docs = [os.path.join(pdf_docs_path, f) for f in os.listdir(pdf_docs_path) if f.endswith('.pdf')]
-        for pdf_path in pdf_docs:
-            with open(pdf_path, "rb") as pdf_file:
-                pdf_reader = PyPDF2.PdfReader(pdf_file)
-                for index, page in enumerate(pdf_reader.pages):
-                    doc_page = {
-                        "title": os.path.basename(pdf_path) + " page " + str(index + 1),
-                        "content": page.extract_text(),
-                    }
-                    docs.append(doc_page)
+        # # Read PDF documents from the given path
+        # pdf_docs = [os.path.join(data_path, f) for f in os.listdir(data_path) if f.endswith('.pdf')]
+        # for pdf_path in pdf_docs:
+        #     with open(pdf_path, "rb") as pdf_file:
+        #         pdf_reader = PyPDF2.PdfReader(pdf_file)
+        #         for index, page in enumerate(pdf_reader.pages):
+        #             doc_page = {
+        #                 "title": os.path.basename(pdf_path) + " page " + str(index + 1),
+        #                 "content": page.extract_text(),
+        #             }
+        #             docs.append(doc_page)
 
-        content = [doc["content"] for doc in docs]
-        metadata = [{"title": doc["title"]} for doc in docs]
+        # content = [doc["content"] for doc in docs]
+        # metadata = [{"title": doc["title"]} for doc in docs]
+        # print("Content and metadata are extracted from the documents")
 
-        print("Content and metadata are extracted from the documents")
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=CHUNK_SIZE,
             chunk_overlap=CHUNK_OVERLAP,
         )
-        split_docs = text_splitter.create_documents(content, metadatas=metadata)
+        df = pd.read_csv(data_path, sep='\t')
+        split_docs = text_splitter.create_documents(df['url_content'], metadatas=[{"title": title} for title in df['url_title']])
         print(f"Documents are split into {len(split_docs)} passages")
 
         db = FAISS.from_documents(split_docs, embeddings)
@@ -81,12 +83,14 @@ def setupDbAndChain(pdf_docs_path):
 
 
 load_dotenv(override=True)
-chain = setupDbAndChain('../../documents/')
+# chain = setupDbAndChain('../../documents/')
+chain = setupDbAndChain('../../data_urlsContent.tsv')
 chat_history = []
 
 def echo(question, history):
     ai_message = chain.invoke({"input": question, "chat_history": chat_history})
     chat_history.extend([HumanMessage(content=question), ai_message["answer"]])
+    print(question, chat_history[-1])
     return ai_message['answer']
 
 demo = gr.ChatInterface(fn=echo, examples=["What is add and adhd"], title="RAG on webmd",theme=gr.themes.Soft(), fill_height=True)
