@@ -55,7 +55,10 @@ def setupDbAndChain(data_path):
             chunk_size=CHUNK_SIZE,
             chunk_overlap=CHUNK_OVERLAP,
         )
-        split_docs = text_splitter.create_documents(df['url_content'], metadatas=[{"title": title} for title in df['url_title']])
+        split_docs = text_splitter.create_documents(
+            df['url_content'].tolist(), 
+            metadatas=[{"title": row["url_title"], "url": row["url"]} for _, row in df.iterrows()]
+        )
         print(f"Documents are split into {len(split_docs)} passages")
 
         db = FAISS.from_documents(split_docs, embeddings)
@@ -75,7 +78,7 @@ def setupDbAndChain(data_path):
     ))
     question_answer_chain = create_stuff_documents_chain(ChatOpenAI(model=model_name), ChatPromptTemplate.from_messages(
         [
-            ("system", "You are an assistant for question-answering tasks. Use the following pieces of retrieved context to answer the question. If you don't know the answer, just say that you don't know. Use three sentences maximum and keep the answer concise. {context}"),
+            ("system", "You are an assistant for question-answering tasks. Use the provided context to answer the questions. If the question isn't related to the context, respond that you don't know the answer. Answer based only on the provided context, not from outside knowledge. The context is as follows: {context}"),
             MessagesPlaceholder("chat_history"),
             ("human", "{input}"),
         ]
@@ -89,10 +92,11 @@ load_dotenv(override=True)
 chain, relevant_content = setupDbAndChain('../../131_webmd_vogon_sample1000_urlsContent_cleaned.tsv')
 chat_history = []
 def echo(question, history):
-    ai_message = chain.invoke({"input": question, "chat_history": chat_history})
-    chat_history.extend([HumanMessage(content=question), ai_message["answer"]])
-    print(question, chat_history[-1])
-    return ai_message['answer']
+    response = chain.invoke({"input": question, "chat_history": chat_history})
+    chat_history.extend([HumanMessage(content=question), response["answer"]])
+    docs_info = "\n\n".join([f"Title: {doc.metadata['title']}\nUrl: {doc.metadata['url']}\nContent: {doc.page_content}" for doc in response["context"]])
+    full_response = f"Answer: {response['answer']}\n\nRetrieved Documents:\n{docs_info}"
+    return full_response
 
 demo = gr.ChatInterface(fn=echo, examples=list(relevant_content), title="RAG on webmd",theme=gr.themes.Soft(), fill_height=True)
 gr.close_all()
