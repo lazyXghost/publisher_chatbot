@@ -1,4 +1,5 @@
 Neo4j RAG course - https://www.deeplearning.ai/short-courses/knowledge-graphs-rag/
+langchain documentation retreiver - https://python.langchain.com/v0.1/docs/modules/data_connection/retrievers/vectorstore/
 
 ## Steps for running rag -:
 1. There are 3 working rag codes in this:
