@@ -28,6 +28,9 @@ model_name = "gpt-3.5-turbo"
 
 def setupDbAndChain(data_path):
     embeddings = OpenAIEmbeddings(model=embedding_model)
+    df = pd.read_csv(data_path, sep='\t')
+    # relevant_content = df['url'].apply(lambda x: ' '.join(x.split('/')[3:])).values
+    relevant_content = df['url'].values
     if not os.path.exists(DB_FAISS_PATH):
         # docs = []
         # metadata = []
@@ -52,7 +55,6 @@ def setupDbAndChain(data_path):
             chunk_size=CHUNK_SIZE,
             chunk_overlap=CHUNK_OVERLAP,
         )
-        df = pd.read_csv(data_path, sep='\t')
         split_docs = text_splitter.create_documents(df['url_content'], metadatas=[{"title": title} for title in df['url_title']])
         print(f"Documents are split into {len(split_docs)} passages")
 
@@ -79,20 +81,19 @@ def setupDbAndChain(data_path):
         ]
     ))
     rag_chain = create_retrieval_chain(history_aware_retriever, question_answer_chain)
-    return rag_chain
+    return rag_chain, relevant_content
 
 
 load_dotenv(override=True)
 # chain = setupDbAndChain('../../documents/')
-chain = setupDbAndChain('../../data_urlsContent.tsv')
+chain, relevant_content = setupDbAndChain('../../131_webmd_vogon_sample1000_urlsContent_cleaned.tsv')
 chat_history = []
-
 def echo(question, history):
     ai_message = chain.invoke({"input": question, "chat_history": chat_history})
     chat_history.extend([HumanMessage(content=question), ai_message["answer"]])
     print(question, chat_history[-1])
     return ai_message['answer']
 
-demo = gr.ChatInterface(fn=echo, examples=["What is add and adhd"], title="RAG on webmd",theme=gr.themes.Soft(), fill_height=True)
+demo = gr.ChatInterface(fn=echo, examples=list(relevant_content), title="RAG on webmd",theme=gr.themes.Soft(), fill_height=True)
 gr.close_all()
 demo.launch(share=True)
