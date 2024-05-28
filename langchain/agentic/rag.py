@@ -1,1 +1,0 @@
-# https://medium.com/the-ai-forum/implementing-agentic-rag-using-langchain-b22af7f6a3b5

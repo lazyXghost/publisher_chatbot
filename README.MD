@@ -1,20 +1,18 @@
-Neo4j RAG course - https://www.deeplearning.ai/short-courses/knowledge-graphs-rag/
-langchain documentation retreiver - https://python.langchain.com/v0.1/docs/modules/data_connection/retrievers/vectorstore/
-
 ## Steps for running rag -:
-1. There are 3 working rag codes in this:
-```
-    langchain/history_aware(best)
-    langchain/streamlit_LLAMA_notGoodOutput
-    llama_index/chat_engine_single_query
-```
-2. Go into specific directory(for streamlit_LLAMA you can use local llama model too by downloading llama-2-7b-chat.Q4_K_M.gguf into models directory and uncommenting the required changes in rag.py file)
-3. Create .env file in root folder and add the following environment variables
+1. Create .env file in root folder and add the following environment variables
 ```
 OPENAI_API_KEY=<YOUR OPENAI KEY>
 ```
-4. Run the following commands:
+2. Run the following commands:
 ```
     pip3 install -r requirements.txt
     python3 rag.py
 ``` 
+
+
+Neo4j RAG course - https://www.deeplearning.ai/short-courses/knowledge-graphs-rag/
+1. langchain documentation retreiver - https://python.langchain.com/v0.1/docs/modules/data_connection/retrievers/vectorstore/
+2. https://medium.com/@shaktikanungo2019/3. conversational-ai-unveiling-the-first-rag-chatbot-with-langchain-8b9b04ee4b63
+3. https://medium.com/@vikrambhat2/building-a-rag-system-and-conversational-chatbot-with-custom-data-793e9617a865
+4. https://abvijaykumar.medium.com/retrieval-augmented-generation-rag-with-llamaindex-1828ef80314c
+5. https://medium.com/the-ai-forum/implementing-agentic-rag-using-langchain-b22af7f6a3b5

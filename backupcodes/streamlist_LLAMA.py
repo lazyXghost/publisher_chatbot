@@ -1,5 +1,3 @@
-# https://medium.com/@vikrambhat2/building-a-rag-system-and-conversational-chatbot-with-custom-data-793e9617a865
-
 import PyPDF2
 import streamlit as st
 from dotenv import load_dotenv

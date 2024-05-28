@@ -1,10 +1,6 @@
-streamlit
+gradio
 python-dotenv
-
-PyPDF2
-
 langchain
 langchain_community
 langchain_openai
-
 faiss-cpu

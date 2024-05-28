@@ -1,5 +1,3 @@
-# https://abvijaykumar.medium.com/retrieval-augmented-generation-rag-with-llamaindex-1828ef80314c
-
 from llama_index.core import (
     VectorStoreIndex,
     SimpleDirectoryReader,
